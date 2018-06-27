@@ -1,0 +1,35 @@
+{
+  "name": "planeskeeper-server",
+  "version": "1.0.0",
+  "description": "MTG card DB",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/planeskeeper/planeskeeper-server.git"
+  },
+  "keywords": [
+    "mtg",
+    "magic",
+    "the",
+    "gathering",
+    "cards",
+    "game",
+    "fantasy"
+  ],
+  "author": "Tyler && Kelly && Chris",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/planeskeeper/planeskeeper-server/issues"
+  },
+  "homepage": "https://github.com/planeskeeper/planeskeeper-server#readme",
+  "dependencies": {
+    "cors": "^2.8.4",
+    "express": "^4.16.3",
+    "mtgsdk": "^0.3.0",
+    "pg": "^7.4.3"
+  }
+}
