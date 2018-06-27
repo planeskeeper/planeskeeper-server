@@ -34,7 +34,7 @@ app.get('/api/v1/users', (req, res) => {
 //Pull all cards from DB.
 app.get('/api/v1/cards', (req, res) => {
     console.log('Pulled all cards from DB (GET request)')
-    let SQL = `SELECT * FROM cards;`;
+    let SQL = `SELECT * FROM collection;`;
     client.query(SQL)
     .then(results => res.send(results.rows))
     .catch(console.error);
@@ -63,17 +63,20 @@ app.post('/api/v1/users', (req, res) => {
 
 //Add a new card to the DB.
 app.post('/api/v1/cards', (req, res) => {
-    let SQL = `INSERT INTO cards(title, rating, description)
-    VALUES ($1, $2, $3, $4, $5, $6);`;
+    let SQL = `INSERT INTO cards(user_id, color, name, card_id, image_url, body, rarity, set)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`;
     
     console.log(req);
     
     let values = [
-        req.body.image_url,
-        req.body.name,
+        req.body.user_id,
         req.body.color,
+        req.body.name,
         req.body.card_id,
+        req.body.image_url,
         req.body.set,
+        req.body.body,
+        req.body.rarity,
         req.body.rarity
     ];
     
@@ -88,10 +91,10 @@ app.post('/api/v1/cards', (req, res) => {
 });
 
 //Remove card from DB
-app.delete('/api/v1/cards/:id', (req, res) => {
+app.delete('/api/v1/collection/:id', (req, res) => {
     
     let SQL = `
-    DELETE FROM cards WHERE card_id= ${req.params.id};
+    DELETE FROM collection WHERE card_id= ${req.params.id};
     `;
     
     client.query(SQL)
