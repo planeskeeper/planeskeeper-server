@@ -40,12 +40,14 @@ app.get('/api/v1/cards', (req, res) => { //Pull all cards from DB.
 
 app.get('/api/v1/collection/:id', (req, res) => { //Pull all cards from DB.
   console.log(`looking for cards collected by ${req.params.id}`);
-  res.send(`attempted to see all cards collected by ${req.params.id}`); 
-  // let SQL = `SELECT * FROM users_cards
-  //   WHERE user_id = ${req.params.id};`;
-  // client.query(SQL)
-  // .then(results => res.send(results.rows))
-  // .catch(console.error);
+  // res.send(`attempted to see all cards collected by ${req.params.id}`); 
+  let user_card_list = `SELECT card_id FROM users_cards WHERE user_id = ${req.params.id}`;
+  let SQL = `SELECT * FROM cards
+    WHERE id IN (${user_card_list});`; 
+  console.log(`With search of ${SQL}`); 
+  client.query(SQL)
+  .then(results => res.send(results.rows))
+  .catch(console.error);
 }); // end app.get for cards
 
 app.post('/api/v1/users', (req, res) => { //Add new user to DB
