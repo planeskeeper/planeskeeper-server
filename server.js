@@ -37,7 +37,7 @@ app.get('/api/v1/cards/search/:id', (req, res) => { //Looking for card with api_
   client.query(SQL)
   .then(results => res.send(results.rows))
   .catch(console.error);
-}); // end app.get for cards
+}); // end app.get for cards SEEMS TO WORK
 
 app.get('/api/v1/cards/:id', (req, res) => { //Looking for card with DB cards table id = :id
   console.log(`Looking for card in our DB with cards table id ${params.req.id}`);
@@ -64,7 +64,62 @@ app.get('/api/v1/collection/:id', (req, res) => { //Pull cards in collection of 
   client.query(SQL)
   .then(results => res.send(results.rows))
   .catch(console.error);
-}); // end app.get for cards
+}); // end app.get for retrieving the collection for user :id 
+
+app.post('/api/v1/collection', (req, res) => { //Looking for card with api_card_id value of ;id 
+  console.log(`Adding for user ${req.body.user_id} card name: ${req.body.name}`);
+
+  // res.send(`attempted to add to user ${req.body.user_id} card name: ${req.body.name}`); 
+  let SQL = `INSERT INTO cards(name, api_card_id, image_url, color, set, rarity, body) 
+    VALUES ($1, $2, $3, $4, $5, $6, $7) 
+    ON CONFLICT DO NOTHING;`; 
+  let values = [
+    req.body.name, 
+    req.body.api_card_id, 
+    req.body.image_url, 
+    req.body.color, 
+    req.body.set, 
+    req.body.rarity, 
+    req.body.body
+  ]; 
+
+  client.query(SQL, values, function(err) {
+    if(err) console.error(err);
+    console.log('inside of INSERT for the card');
+    searchId(); 
+  });
+  
+  function searchId() {
+    console.log('Inside searchId function');
+    let SQL = `SELECT id FROM cards WHERE api_card_id=$1;`; 
+    let values = [req.body.api_card_id];
+    client.query(SQL, values, function (err, results) {
+      if (err) console.error(err); 
+      addRelation(results.rows[0].id)
+    })
+  } // end searchId funciton
+  
+  function addRelation(id) {
+    console.log('Inside addRelations function'); 
+    let SQL = `
+      INSERT INTO users_cards(user_id, card_id, amount)
+      VALUES ($1, $2, $3);
+      `;
+    let values = [
+      req.body.user_id, 
+      id, 
+      1 // the amount of this card the user has in collection. 
+    ];
+    client.query(SQL, values, function(err) {
+      if(err) console.error(err); 
+      console.log('Inserting the relationship!');
+      res.send('insert to collections complete'); 
+    }); // end client.query
+  } // end addRelations function 
+
+  // // .then(results => res.send(results.rows))
+  // .catch(console.error);
+}); // end app.post for cards that may or may not be in our cards table
 
 app.post('/api/v1/users', (req, res) => { //Add new user to DB
   console.log(`We have POST for adding user: ${req.body.username}`); 
