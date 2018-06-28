@@ -29,17 +29,33 @@ app.get('/api/v1/users', (req, res) => { //Pulls all users from DB
   // .catch(console.error);
 }); // end app.get for users
 
-app.get('/api/v1/cards', (req, res) => { //Pull all cards from DB.
-  console.log('Pulled all cards from DB (GET request)');
-  res.send(`attempted to get all cards from DB`); 
-  // let SQL = `SELECT * FROM cards;`;
+app.get('/api/v1/cards/search/:id', (req, res) => { //Looking for card with api_card_id value of ;id 
+  console.log(`looking for api_card_id ${req.params.id}`);
+  // res.send(`attempted to look at api_card_id ${req.params.id}`); 
+  let SQL = `SELECT id FROM cards
+    WHERE api_card_id = '${req.params.id}';`;
+  client.query(SQL)
+  .then(results => res.send(results.rows))
+  .catch(console.error);
+}); // end app.get for cards
+
+app.get('/api/v1/cards/:id', (req, res) => { //Looking for card with DB cards table id = :id
+  console.log(`Looking for card in our DB with cards table id ${params.req.id}`);
+  res.send(`attempted to look for card in our DB with id ${params.req.id}`); 
+  // let key = `api_card_id`; 
+  // let value = req;
+  // console.log(value); 
+  // console.log(`Key ${key}, Value ${value}`); 
+  // res.send(req.body); 
+  // let SQL = `SELECT * FROM cards
+  //   WHERE ${key} = ${value};`;
   // client.query(SQL)
   // .then(results => res.send(results.rows))
   // .catch(console.error);
 }); // end app.get for cards
 
-app.get('/api/v1/collection/:id', (req, res) => { //Pull all cards from DB.
-  console.log(`looking for cards collected by ${req.params.id}`);
+app.get('/api/v1/collection/:id', (req, res) => { //Pull cards in collection of user :id
+  console.log(`looking for cards collected by user ${req.params.id}`);
   // res.send(`attempted to see all cards collected by ${req.params.id}`); 
   let user_card_list = `SELECT card_id FROM users_cards WHERE user_id = ${req.params.id}`;
   let SQL = `SELECT * FROM cards
@@ -67,18 +83,16 @@ app.post('/api/v1/cards', (req, res) => { //Add a new card to the DB.
   console.log(`POST to add a card ${req.body.name}`);
   res.send(`We attempted to add card ${req.body.name}`); 
   // let SQL = `INSERT INTO cards(
-  //   user_id, color, name, card_id, image_url, body, rarity, set)
+  //   name, api_card_id, image_url, color, set, rarity, body)
   //   VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`;
   // let values = [
-  //   req.body.user_id,
-  //   req.body.color,
   //   req.body.name,
-  //   req.body.card_id,
+  //   req.body.api_card_id,
   //   req.body.image_url,
+  //   req.body.color,
   //   req.body.set,
-  //   req.body.body,
   //   req.body.rarity,
-  //   req.body.rarity
+  //   req.body.body
   // ];
   // client.query(SQL, values)
   //   .then( () => res.send('Inserted new card into db'))
