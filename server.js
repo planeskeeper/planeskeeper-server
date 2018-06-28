@@ -104,6 +104,25 @@ app.delete('/api/v1/collection/:id', (req, res) => {
 });
 
 
+app.get('/api/v1/users:id', (req, res) => {
+    console.log(req.body);
+    let SQL = `SELECT `
+    
+    
+    let values = [
+        req.body.username,
+    ];
+    
+    
+    client.query(SQL, values)
+    .then(function () {
+        res.send('New user added!')
+    })
+    .catch(function (err) {
+        console.error(err);
+    })
+});
+
 app.get('*', (req, res) => res.status(404).send('Oh no. 404'));
 
 app.listen(PORT, () => console.log(`The server is listening on PORT: ${PORT}`));
