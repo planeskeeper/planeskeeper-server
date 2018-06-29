@@ -56,11 +56,13 @@ app.get('/api/v1/cards/:id', (req, res) => { //Looking for card with DB cards ta
 
 app.get('/api/v1/collection/:id', (req, res) => { //Pull cards in collection of user :id
   console.log(`looking for cards collected by user ${req.params.id}`);
+  console.log('====================================================');
   // res.send(`attempted to see all cards collected by ${req.params.id}`); 
   let user_card_list = `SELECT card_id FROM users_cards WHERE user_id = ${req.params.id}`;
   let SQL = `SELECT * FROM cards
     WHERE card_id IN (${user_card_list});`; 
   console.log(`With search of ${SQL}`); 
+  console.log('------------------------------------------------');
   client.query(SQL)
   .then(results => res.send(results.rows))
   .catch(console.error);
@@ -70,35 +72,51 @@ app.post('/api/v1/collection', (req, res) => { //Looking for card with api_card_
   console.log(`Adding for user ${req.body.user_id} card name: ${req.body.name}`);
 
   // res.send(`attempted to add to user ${req.body.user_id} card name: ${req.body.name}`); 
-  let SQL = `INSERT INTO cards(name, api_card_id, image_url, color, set, rarity, body) 
+  
+  if (req.body.card_id !== 'search') { 
+    console.log('we should skip to addRelations');
+    console.log('------------Skip to step 3! -------------------------------');
+    addRelation(req.body.card_id); 
+  } else { // we are adding from search and need to check if it is in our cards table
+    console.log('Maybe we know this card, maybe not! ');
+    console.log('------------------------------------------------');
+    let SQL = `INSERT INTO cards(name, api_card_id, image_url, color, set, rarity, body) 
     VALUES ($1, $2, $3, $4, $5, $6, $7) 
     ON CONFLICT DO NOTHING;`; 
-  let values = [
-    req.body.name, 
-    req.body.api_card_id, 
-    req.body.image_url, 
-    req.body.color, 
-    req.body.set, 
-    req.body.rarity, 
-    req.body.body
-  ]; 
+    let values = [
+      req.body.name, 
+      req.body.api_card_id, 
+      req.body.image_url, 
+      req.body.color, 
+      req.body.set, 
+      req.body.rarity, 
+      req.body.body
+    ]; 
+    client.query(SQL, values, function(err) {
+      if(err) console.error(err);
+      console.log('inside of INSERT for the card');
+      console.log('------------Step 1 ------------------------------------');
+      searchId(); 
+    });
+    
+    function searchId() {
+      console.log('Inside searchId function');
+      console.log('-----------------Step 2-------------------------------');
 
-  client.query(SQL, values, function(err) {
-    if(err) console.error(err);
-    console.log('inside of INSERT for the card');
-    searchId(); 
-  });
-  
-  function searchId() {
-    console.log('Inside searchId function');
-    let SQL = `SELECT card_id FROM cards WHERE api_card_id=$1;`; 
-    let values = [req.body.api_card_id];
-    client.query(SQL, values, function (err, results) {
-      if (err) console.error(err); 
-      addRelation(results.rows[0].card_id)
-    })
-  } // end searchId funciton
-  
+      let SQL = `SELECT card_id FROM cards WHERE api_card_id=$1;`; 
+      let values = [req.body.api_card_id];
+      console.log(SQL); 
+      console.log(values);
+      client.query(SQL, values, function (err, results) {
+        if (err) console.error(err); 
+        console.log(`These are the results:`);
+        console.log(results); 
+        console.log('------==== What the heck! =====------------');
+        addRelation(results.rows[0].card_id);
+      });
+    } // end searchId funciton
+  } // end of else section: AKA we are checking on card we got from search results
+
   function addRelation(card_id) {
     console.log('Inside addRelations function'); 
     let SQL = `
@@ -110,11 +128,13 @@ app.post('/api/v1/collection', (req, res) => { //Looking for card with api_card_
       card_id, 
       1 // the amount of this card the user has in collection. 
     ];
-    client.query(SQL, values, function(err) {
-      if(err) console.error(err); 
-      console.log('Inserting the relationship!');
-      res.send('insert to collections complete'); 
-    }); // end client.query
+    client.query(SQL, values)
+      .then(results => {
+        console.log('Inserting the relationship!');
+        console.log('----------------Step 3--------------------------------');
+        res.send('insert to collections complete'); 
+      })
+      .catch(console.error); // end client.query
   } // end addRelations function 
 
   // // .then(results => res.send(results.rows))
