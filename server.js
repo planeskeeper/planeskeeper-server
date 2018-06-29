@@ -40,9 +40,9 @@ app.get('/api/v1/cards/search/:id', (req, res) => { //Looking for card with api_
 }); // end app.get for cards SEEMS TO WORK
 
 app.get('/api/v1/cards/:id', (req, res) => { //Looking for card with DB cards table id = :id
-  console.log(`Looking for card in our DB with cards table id ${params.req.id}`);
-  res.send(`attempted to look for card in our DB with id ${params.req.id}`); 
-  // let key = `api_card_id`; 
+  console.log(`Looking for card in our DB with cards table card_id ${params.req.id}`);
+  res.send(`attempted to look for card in our DB with card_id ${params.req.id}`); 
+  // let key = `card_id`; 
   // let value = req;
   // console.log(value); 
   // console.log(`Key ${key}, Value ${value}`); 
@@ -59,14 +59,14 @@ app.get('/api/v1/collection/:id', (req, res) => { //Pull cards in collection of 
   // res.send(`attempted to see all cards collected by ${req.params.id}`); 
   let user_card_list = `SELECT card_id FROM users_cards WHERE user_id = ${req.params.id}`;
   let SQL = `SELECT * FROM cards
-    WHERE id IN (${user_card_list});`; 
+    WHERE card_id IN (${user_card_list});`; 
   console.log(`With search of ${SQL}`); 
   client.query(SQL)
   .then(results => res.send(results.rows))
   .catch(console.error);
 }); // end app.get for retrieving the collection for user :id 
 
-app.post('/api/v1/collection', (req, res) => { //Looking for card with api_card_id value of ;id 
+app.post('/api/v1/collection', (req, res) => { //Looking for card with api_card_id value of :id 
   console.log(`Adding for user ${req.body.user_id} card name: ${req.body.name}`);
 
   // res.send(`attempted to add to user ${req.body.user_id} card name: ${req.body.name}`); 
@@ -91,15 +91,15 @@ app.post('/api/v1/collection', (req, res) => { //Looking for card with api_card_
   
   function searchId() {
     console.log('Inside searchId function');
-    let SQL = `SELECT id FROM cards WHERE api_card_id=$1;`; 
+    let SQL = `SELECT card_id FROM cards WHERE api_card_id=$1;`; 
     let values = [req.body.api_card_id];
     client.query(SQL, values, function (err, results) {
       if (err) console.error(err); 
-      addRelation(results.rows[0].id)
+      addRelation(results.rows[0].card_id)
     })
   } // end searchId funciton
   
-  function addRelation(id) {
+  function addRelation(card_id) {
     console.log('Inside addRelations function'); 
     let SQL = `
       INSERT INTO users_cards(user_id, card_id, amount)
@@ -107,7 +107,7 @@ app.post('/api/v1/collection', (req, res) => { //Looking for card with api_card_
       `;
     let values = [
       req.body.user_id, 
-      id, 
+      card_id, 
       1 // the amount of this card the user has in collection. 
     ];
     client.query(SQL, values, function(err) {
